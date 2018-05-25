@@ -1,3 +1,6 @@
+// Toolbar Helper class definition
+//
+
 #pragma once
 
 // Define various toolbar button styles in case they are missing

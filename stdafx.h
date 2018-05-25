@@ -2,6 +2,9 @@
 //  or project specific include files that are used frequently, but
 //  are changed infrequently
 //
+// Author: Jungho Park
+// Date: July 2018
+//
 
 #pragma once
 

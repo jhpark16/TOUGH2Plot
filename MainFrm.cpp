@@ -1,5 +1,9 @@
 // MainFrm.cpp : implmentation of the CMainFrame class
 //
+// Author: Jungho Park
+// Date: 2017
+// MainFrm.cpp handles the commands from the main menu
+//
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
@@ -12,6 +16,7 @@
 PTSATRecord mPTSAT;
 int GetEncoderClsid(const WCHAR* format, CLSID* pClsid);  // helper function
 
+// OnCreate is called when the application is created
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
   //unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
@@ -19,7 +24,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	// attach menu
 	m_CmdBar.AttachMenu(GetMenu());
-	// load command bar images
+	// load command bar(images)
 	m_CmdBar.LoadImages(IDR_MAINFRAME);
 	// remove old menu
 	SetMenu(NULL);
@@ -50,6 +55,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
   m_hWndStatusBar = m_wndStatusBar.Create ( *this );
   UIAddStatusBar ( m_hWndStatusBar );
+
 	//CreateSimpleStatusBar();
 	int anPanes[] = { ID_DEFAULT_PANE, ID_PANE_VALUE};
   m_wndStatusBar.SetPanes ( anPanes, 2, false );
@@ -558,13 +564,15 @@ LRESULT CMainFrame::OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
   width = rc.right/25.4;
   height = rc.bottom/25.4;
 	tCstr.Empty();
-	//dataBuf[0]=0;
+
+  // Set the scale factor for proper Enhanced metafile rendering for MS Office
+  // If the scale factor is not right, lines could be too thin or too thick
 	scaleFactor = PAINT_DIM/width*1.34*99.12195/dDPI; // a smaller number increases the size
+  // Set the origin of the plot
 	CPoint ptOrigin(width*0.15,height*0.9);
+  // Paint the saturation of oil or water
   Paint((CDCHandle)aDCmeta,&tCstr, scaleFactor, ptOrigin);
-  //cb.Sa
-  //CEnhMetaFile mf(aDCmeta.Close());
-  //::SetClipboardData(CF_ENHMETAFILE,mf);
+  // Set the painted output (vector graphics) to Clipboard
   ::SetClipboardData(CF_ENHMETAFILE,aDCmeta.Close());
 
 
@@ -582,67 +590,6 @@ LRESULT CMainFrame::OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
   // Place the handle on the clipboard. 
   SetClipboardData(CF_UNICODETEXT, hglbCopy); 
   ::CloseClipboard(); 
-/*  // Get a pointer to the structure for the selected label. 
-  pbox = (PLABELBOX) GetWindowLong(hwndSelected, 0); 
-//CF_ENHMETAFILE
-  // If text is selected, copy it using the CF_TEXT format. 
-  if (pbox->fEdit) 
-  { 
-    if (pbox->ichSel == pbox->ichCaret)     // zero length
-    {   
-      CloseClipboard();                   // selection 
-      return FALSE; 
-    } 
-    if (pbox->ichSel < pbox->ichCaret) 
-    { 
-      ich1 = pbox->ichSel; 
-      ich2 = pbox->ichCaret; 
-    } 
-    else 
-    { 
-      ich1 = pbox->ichCaret; 
-      ich2 = pbox->ichSel; 
-    } 
-    cch = ich2 - ich1; 
-    // Allocate a global memory object for the text. 
-    hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (cch + 1) * sizeof(TCHAR)); 
-    if (hglbCopy == NULL) 
-    { ::CloseClipboard(); return FALSE; } 
-    // Lock the handle and copy the text to the buffer. 
-    lptstrCopy = GlobalLock(hglbCopy); 
-    memcpy(lptstrCopy, &pbox->atchLabel[ich1], cch * sizeof(TCHAR)); 
-    lptstrCopy[cch] = (TCHAR) 0;    // null character 
-    GlobalUnlock(hglbCopy); 
-    // Place the handle on the clipboard. 
-    SetClipboardData(CF_TEXT, hglbCopy); 
-  } 
-  // If no text is selected, the label as a whole is copied. 
-  else 
-  { 
-    // Save a copy of the selected label as a local memory 
-    // object. This copy is used to render data on request. 
-    // It is freed in response to the WM_DESTROYCLIPBOARD 
-    // message. 
-    pboxLocalClip = (PLABELBOX) LocalAlloc( 
-      LMEM_FIXED, 
-      sizeof(LABELBOX) 
-      ); 
-    if (pboxLocalClip == NULL) 
-    { 
-      CloseClipboard(); 
-      return FALSE; 
-    } 
-    memcpy(pboxLocalClip, pbox, sizeof(LABELBOX)); 
-    pboxLocalClip->fSelected = FALSE; 
-    pboxLocalClip->fEdit = FALSE; 
-    // Place a registered clipboard format, the owner-display 
-    // format, and the CF_TEXT format on the clipboard using 
-    // delayed rendering. 
-    SetClipboardData(uLabelFormat, NULL); 
-    SetClipboardData(CF_OWNERDISPLAY, NULL); 
-    SetClipboardData(CF_TEXT, NULL); 
-  } 
-*/
 	return 0;
 }
 

@@ -1,5 +1,8 @@
 // TOUGH2Plot.cpp : main source file for TOUGH2Plot.exe
 //
+// Author: Jungho Park
+// Date: 2017
+//
 
 #include "stdafx.h"
 

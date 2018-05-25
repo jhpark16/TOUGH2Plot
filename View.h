@@ -1,5 +1,9 @@
 // View.h : interface of the CView class
 //
+// Author: Jungho Park
+// Date: July 2018
+// Class definition for CView from Document/View architecture
+//
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -7,28 +11,28 @@
 class CView : public CWindowImpl<CView>, public CDynamicChain
 {
 public:
-	DECLARE_WND_CLASS(NULL)
+  DECLARE_WND_CLASS(NULL)
 
-	BOOL PreTranslateMessage(MSG* pMsg)
-	{
-		pMsg;
-		return FALSE;
-	}
+  BOOL PreTranslateMessage(MSG* pMsg)
+  {
+    pMsg;
+    return FALSE;
+  }
 
-	BEGIN_MSG_MAP(CView)
-		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+  BEGIN_MSG_MAP(CView)
+    MESSAGE_HANDLER(WM_PAINT, OnPaint)
     MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
     MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
     MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
     MESSAGE_HANDLER(WM_MOUSEHOVER, OnMouseHover)
     MESSAGE_HANDLER(WM_LBUTTONDBLCLK, OnLButtonDblClk)
     //CHAIN_MSG_MAP_DYNAMIC(1521)
-	END_MSG_MAP()
+  END_MSG_MAP()
 
-// Handler prototypes (uncomment arguments if needed):
-//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-//	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-//	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
+  // Handler prototypes (uncomment arguments if needed):
+  //	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+  //	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+  //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
   LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
   LRESULT OnEraseBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
   LRESULT OnKeyDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -38,9 +42,13 @@ public:
 
 };
 
+// Definitions for maximum allowed sizes for the plot data
 #define MAX_RECORD 2000
+// Maximum number of time steps allowed
 #define MAX_TIME 330
+// Maximum number of elements from the model
 #define MAX_ELEM 16500
+// Target virtual dimension of the plot
 #define PAINT_DIM 100000
 
 #pragma pack(push,1) 
@@ -153,6 +161,7 @@ struct T2FluxRecord
 #endif
 #pragma pack(pop) 
 
+// Rectangle geometry class in double precision
 class CRectD
 {
 public:
@@ -162,18 +171,29 @@ public:
   double bottom;
 };
 
+// Main data structure
 class PTSATRecord
 {
 public:
+  // The file got from the data structure
   CString sSelectedFile;
+  // The index of the current time step
   int indexTime;
+  // The current plot
   int indexPlot;
+  // The current plot type
   int indexPlotType;
+  // Number of time steps
   int nTimes;
+  // Number of elements
   int nElements;
+  // Number of connections between elements
   int nConnection;
+  // Number of rows of the model
   int nRows;
+  // Number of columns of the model
   int nColumns;
+  // 
   int nArrowInterval;
   bool bClientUpdated;
   double xscale, yscale;
@@ -219,23 +239,32 @@ public:
   double Y_VEL_AQ[MAX_TIME][MAX_ELEM];
   double X_VEL_OIL[MAX_TIME][MAX_ELEM];
   double Y_VEL_OIL[MAX_TIME][MAX_ELEM];
+
+  // Find the element using the x, y mouse locations and returns
+  // the index of the element
   int Find(int ix, int iy)
   {
-    for (int i = 0; i<nElements; i++)
+    for (int i = 0; i < nElements; i++)
     {
       if (boxClient[i].PtInRect(CPoint(ix, iy)))
       {
         return i;
       }
     }
+    // If the mouse location is on colour map, returns -2
     if (boxCMapLegend.PtInRect(CPoint(ix, iy))) return -2;
+    // Returns -1 when failed
     return -1;
   };
+
+  // Get or Set the plot data for state variables (Temperature, Saturation of liquid, gas, and oil, etc)
+  // idx
+  // If bSet is true, the val is set to the variable
   double GetSetPlotData(int idx, int iData, double val, bool bSet)
   {
-    switch (indexPlot)
+    switch (indexPlot) // The current plot type
     {
-    case 1:
+    case 1: // If the current plot type is the saturation of liquid  (water)
       switch (iData)
       {
       case 1: case 3: { if (bSet) SL_RANGE[iData - 1] = val; return SL_RANGE[iData - 1]; }
@@ -244,7 +273,7 @@ public:
       case 0:
       default: return SL[indexTime][idx];
       }
-    case 2:
+    case 2: // If the current plot type is the Saturation of gas
       switch (iData)
       {
       case 1: case 3: { if (bSet) SG_RANGE[iData - 1] = val; return SG_RANGE[iData - 1]; }
@@ -295,6 +324,7 @@ public:
       case 1: case 3: { if (bSet) ln_K_RANGE[iData - 1] = val; return ln_K_RANGE[iData - 1]; }
       case 2: case 4: { if (bSet) ln_K_RANGE[iData - 1] = val; return ln_K_RANGE[iData - 1]; }
       case 5: return ln_K_Avg;
+        // For any other cases, returns the current SOIL value of the cell (element) at idx
       case 0:
       default: return ln_K[idx];
       }
@@ -304,7 +334,9 @@ public:
       {
       case 1: case 3: { if (bSet) SOIL_RANGE[iData - 1] = val; return SOIL_RANGE[iData - 1]; }
       case 2: case 4: { if (bSet) SOIL_RANGE[iData - 1] = val; return SOIL_RANGE[iData - 1]; }
+              // If iData is 5, returns the average of saturaiton of oil
       case 5: return SOIL_Avg[idx];
+        // For any other cases, returns the current SOIL value of the cell (element) at idx
       case 0:
       default: return SOIL[indexTime][idx];
       }

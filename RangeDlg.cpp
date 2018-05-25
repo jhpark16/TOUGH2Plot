@@ -1,5 +1,8 @@
 // aboutdlg.cpp : implementation of the CAboutDlg class
 //
+// Author: Jungho Park
+// Date: 2017
+//
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
@@ -8,8 +11,10 @@
 #include "rangedlg.h"
 #include "View.h"
 
+// The main structure containing the multiphase temperature and saturation data for the plot
 extern PTSATRecord mPTSAT;
 
+// Dialog box for data input
 LRESULT CRangeDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	CenterWindow(GetParent());

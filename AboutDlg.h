@@ -1,5 +1,9 @@
 // aboutdlg.h : interface of the CAboutDlg class
 //
+// Author: Jungho Park
+// Date: July 2018
+// aboutdlg.h: header file for About TOUGH2Plot
+//
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once

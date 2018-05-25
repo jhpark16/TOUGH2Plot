@@ -1,7 +1,10 @@
 // View.cpp : implementation of the CView class
 //
+// Author: Jungho Park
+// Date: 2017
+//
 /////////////////////////////////////////////////////////////////////////////
-X_VEL_AQ
+
 #include "stdafx.h"
 #include "resource.h"
 
