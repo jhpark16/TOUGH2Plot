@@ -14,7 +14,7 @@ class CRangeDlg : public CDialogImpl<CRangeDlg>,
                  public CWinDataExchange<CRangeDlg>
 {
 public:
-  // Dialog box ID
+  // Dialog box ID for this range set dialog box
 	enum { IDD = IDD_RANGE_SET };
   // Declare satic function ProcessWindowMessage
 	BEGIN_MSG_MAP(CRangeDlg)

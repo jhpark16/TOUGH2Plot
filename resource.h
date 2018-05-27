@@ -7,13 +7,18 @@
 #define IDD_ABOUTBOX				100
 #define IDR_MAINFRAME				128
 //#define IDR_TOUGH2PLOTTYPE	129
+// Dialog box id for the range set dialog box
 #define IDD_RANGE_SET                   201
 #define ID_PANE_VALUE                   250
+// Dialog box Edit control for the minimum value
 #define IDC_RANGE_MIN                   1000
+// Dialog box Edit control for the maximum value
 #define IDC_RANGE_MAX                   1001
 #define IDC_RANGE_TEXT                  1002
 #define ID_FILE_OPENGRID                32775
+// Placeholder for the first combo box in the Toolbar
 #define ID_COMBO_PLACEHOLDER            32780
+// Placeholder for the second combo box in the Toolbar
 #define ID_COMBO_PLACEHOLDER2           32781
 #define ID_FILE_REOPEN                  32782
 #define ID_COMBO_PLACEHOLDER3           32785

@@ -108,3 +108,5 @@ protected:
   void CMainFrame::OpenPlot(CString sSelectedFile);
 
 };
+// Get image encoder clsid
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid);

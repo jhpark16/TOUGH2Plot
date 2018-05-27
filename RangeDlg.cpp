@@ -1,7 +1,7 @@
 // aboutdlg.cpp : implementation of the CAboutDlg class
 //
 // Author: Jungho Park
-// Date: 2017
+// Date: July 2018
 //
 /////////////////////////////////////////////////////////////////////////////
 

@@ -1,4 +1,5 @@
 // Toolbar Helper class definition
+// Controls (such as a combox box) can be added to a Toolbar with this helper class
 //
 
 #pragma once

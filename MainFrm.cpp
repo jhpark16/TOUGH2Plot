@@ -1,7 +1,7 @@
 // MainFrm.cpp : implmentation of the CMainFrame class
 //
 // Author: Jungho Park
-// Date: 2017
+// Date: July 2018
 // MainFrm.cpp handles the commands from the main menu
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -14,7 +14,6 @@
 #include "MainFrm.h"
 
 PTSATRecord mPTSAT;
-int GetEncoderClsid(const WCHAR* format, CLSID* pClsid);  // helper function
 
 // OnCreate is called when the application is created
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -486,6 +485,7 @@ LRESULT CMainFrame::OnFileSaveMovie(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
   encoderParameters->Parameter[1].Value = &nCompression;
 
   CLSID encoderClsid;
+  // Get image/tiff encoder clsid
   GetEncoderClsid(L"image/tiff", &encoderClsid);
 
   parameterValue = EncoderValueMultiFrame;
@@ -643,9 +643,9 @@ void CMainFrame::OnToolBarCombo(HWND hWndCombo, UINT nID, int nSel, LPCTSTR lpsz
 //	AtlMessageBox(*this, lpszText, IDR_MAINFRAME);
 }
 
-LRESULT CMainFrame::OnKeyDown(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
+LRESULT CMainFrame::OnKeyDown(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-  if(wParam == 37)
+  if(wParam == 37) // Left Arrow
   {
     // go back 
     if(mPTSAT.indexTime>0)
@@ -655,8 +655,9 @@ LRESULT CMainFrame::OnKeyDown(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
       m_wndComboTime.Invalidate();
       m_view.Invalidate();
     }
+    //bHandled = true;
   }
-  else if(wParam == 39)
+  else if(wParam == 39) // Right Arrow
   {
     // go forward
     if(mPTSAT.indexTime<mPTSAT.nTimes-1)
@@ -666,6 +667,7 @@ LRESULT CMainFrame::OnKeyDown(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
       m_wndComboTime.Invalidate();
       m_view.Invalidate();
     }
+    //bHandled = true;
   }
   return 0;
 }
@@ -721,5 +723,37 @@ int Element_Index(char buf[])//, int j, int i, int nxelem)
    iTmp = iTmp*10+getCodeValue(buf[3]);
    iTmp = iTmp*10+getCodeValue(buf[4]);
    return iTmp;
+}
+
+// Get image encoder clsid
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
+{
+  UINT  num = 0;          // number of image encoders
+  UINT  size = 0;         // size of the image encoder array in bytes
+
+  ImageCodecInfo* pImageCodecInfo = NULL;
+  // Obtain the total number and size of available image encoders
+  GetImageEncodersSize(&num, &size);
+  if (size == 0)
+    return -1;  // Failure
+
+  pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+  if (pImageCodecInfo == NULL)
+    return -1;  // Failure
+  //
+  GetImageEncoders(num, size, pImageCodecInfo);
+
+  for (UINT j = 0; j < num; ++j)
+  {
+    if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+    {
+      *pClsid = pImageCodecInfo[j].Clsid;
+      free(pImageCodecInfo);
+      return j;  // Success
+    }
+  }
+
+  free(pImageCodecInfo);
+  return -1;  // Failure
 }
 

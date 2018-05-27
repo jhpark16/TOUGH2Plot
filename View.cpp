@@ -1,7 +1,7 @@
 // View.cpp : implementation of the CView class
 //
 // Author: Jungho Park
-// Date: 2017
+// Date: July 2018
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -13,79 +13,53 @@
 
 extern PTSATRecord mPTSAT;
 
-int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
-{
-   UINT  num = 0;          // number of image encoders
-   UINT  size = 0;         // size of the image encoder array in bytes
-
-   ImageCodecInfo* pImageCodecInfo = NULL;
-
-   GetImageEncodersSize(&num, &size);
-   if(size == 0)
-      return -1;  // Failure
-
-   pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
-   if(pImageCodecInfo == NULL)
-      return -1;  // Failure
-
-   GetImageEncoders(num, size, pImageCodecInfo);
-
-   for(UINT j = 0; j < num; ++j)
-   {
-      if( wcscmp(pImageCodecInfo[j].MimeType, format) == 0 )
-      {
-         *pClsid = pImageCodecInfo[j].Clsid;
-         free(pImageCodecInfo);
-         return j;  // Success
-      }    
-   }
-
-   free(pImageCodecInfo);
-   return -1;  // Failure
-}
-
+// Return the value of the colour map (jet scheme) for the level
 COLORREF CCMap(double level)
 {
   double lvl;
   int R,G,B;
-  if(level<0.0) level = 0.0;
-  if(level>1.0) level = 1.0;
+  level = max(0.0, min(level, 1.0));
+  // Divide the level into 8 intervals
   lvl = level*8.0;
   if(lvl<=1.0)
   {
+    // Starting from B=127 and increase B with increasing level
     R=0; G=0;
     B = (int)(127.5*(lvl)+127.5);
   }
   else if(lvl<=3.0)
   {
+    // From B=255, decrease B with increasing level
     R=0; B=255;
     G = (int)(127.5*(lvl-1.0));
   }
   else if(lvl<=5.0)
   {
     G=255;
+    // From Cyan to Yello with increasing level
     B = (int)(127.5*(5.0-lvl));
     R = (int)(127.5*(lvl-3.0));
   }
   else if(lvl<=7.0)
   {
     R=255; B=0;
+    // From Yello to Red with increasing level
     G = (int)(127.5*(7.0-lvl));
   }
   else
   {
     G=0; B=0;
+    // From Red to R=127 with increasing level
     R = (int)(127.5*(8.0-lvl)+127.5);
   }
-  if(G<0) G = 0;
-  if(G>255) G = 255;
-  if(B<0) B = 0;
-  if(B>255) B = 255;
-  if(R<0) R = 0;
-  if(R>255) R = 255;
+  // Limit R, G, B to unsigned character range
+  R = max(0, min(R, 255));
+  G = max(0, min(G, 255));
+  B = max(0, min(B, 255));
   return RGB(R,G,B);
 }
 
+// Scale a rentangle by the scaleFactor and add ptOrigin value
 void ScaleRect(CRect *rect,int scaleFactor, CPoint ptOrigin)
 {
   rect->left = rect->left/scaleFactor+ptOrigin.x;
@@ -95,12 +69,16 @@ void ScaleRect(CRect *rect,int scaleFactor, CPoint ptOrigin)
   rect->NormalizeRect();
 }
 
+// Scale a point by the scaleFactor and add ptOrigin value
 void ScalePoint(CPoint *point,int scaleFactor, CPoint ptOrigin)
 {
   point->x = point->x/scaleFactor+ptOrigin.x;
   point->y = -point->y/scaleFactor+ptOrigin.y;
 }
 
+// Main paint routine to draw the plot using the device context (dc)
+// and scaleFactor and ptOrign (the amount of 2D shift)
+// wbuf returns the plot data as text separated with tabs for Clipboard
 void Paint(CDCHandle dc, CString *wbuf, int scaleFactor, CPoint ptOrigin)
 {
 	//TODO: Add your drawing code here
@@ -375,9 +353,10 @@ void Paint(CDCHandle dc, CString *wbuf, int scaleFactor, CPoint ptOrigin)
     dc.GetTextExtent(tCstr,tCstr.GetLength(),&sz);
     tRect = CRect(PAINT_DIM/2.0,-PAINT_DIM*3/4*0.01,PAINT_DIM/2.0,-PAINT_DIM*3/4*0.01);
     ScaleRect(&tRect,scaleFactor,ptOrigin);
-    tRect.left += -sz.cx/2;
-    tRect.right = tRect.left+sz.cx;
-    tRect.bottom = tRect.top+sz.cy;
+    tRect += CRect(-sz.cx / 2, 0, sz.cx / 2, sz.cy);
+    //tRect.left += -sz.cx/2;
+    //tRect.right = tRect.left+sz.cx;
+    //tRect.bottom = tRect.top+sz.cy;
     tInt=dc.DrawTextW(tCstr,-1,&tRect,0);
 
     tCstr.Format(_T("%.0lf"),tRange);
@@ -409,36 +388,6 @@ LRESULT CView::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL
   Paint((CDCHandle)mDC,NULL,scaleFactor,ptOrigin);
   dc.BitBlt(rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,mDC,0,0,SRCCOPY);
 
-/*
-  EncoderParameters *encoderParameters;
-  ULONG             parameterValue;
-  ULONG nCompression = EncoderValue::EncoderValueCompressionLZW;
-  Status            stat;
-  encoderParameters = (EncoderParameters*) malloc(sizeof(EncoderParameters)+2*sizeof(EncoderParameter));
-  encoderParameters->Count = 2;
-  // Initialize the one EncoderParameter object.
-  encoderParameters->Parameter[0].Guid = EncoderSaveFlag;
-  encoderParameters->Parameter[0].Type = EncoderParameterValueTypeLong;
-  encoderParameters->Parameter[0].NumberOfValues = 1;
-  encoderParameters->Parameter[0].Value = &parameterValue;
-  encoderParameters->Parameter[1].Guid = EncoderCompression;
-  encoderParameters->Parameter[1].Type = EncoderParameterValueTypeLong;
-  encoderParameters->Parameter[1].NumberOfValues = 1;
-  encoderParameters->Parameter[1].Value = &nCompression;
-
-  CLSID encoderClsid;
-  GetEncoderClsid(L"image/tiff", &encoderClsid);
-
-  //
-  Bitmap *bp = new Bitmap(mDC.GetCurrentBitmap().m_hBitmap,NULL);
-  parameterValue = EncoderValueMultiFrame;
-  stat = bp->Save(_T("Output.tiff"), &encoderClsid, encoderParameters);
-  //parameterValue = EncoderValueFrameDimensionPage;
-  //stat = bp->SaveAdd(bp, encoderParameters);
-  parameterValue = EncoderValueFlush;
-  stat = bp->SaveAdd(encoderParameters);
-
-*/
 	return 0;
 }
 
@@ -451,11 +400,15 @@ LRESULT CView::OnEraseBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 LRESULT CView::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 {
+  // If Left arrow (37) or Right arrow (39) is pressed
   if(wParam == 37 || wParam == 39)
   {
     LRESULT lResult;
+    // Send the message to the MainFrm message handler
     CallChain(1521, m_hWnd, uMsg, wParam, lParam, lResult);
-    SetMsgHandled(false);
+    // When message is processed by handler, it is marked as handled.
+    // So, this is not necessary
+    //SetMsgHandled(true);
   }
 	return 0;
 }
@@ -471,26 +424,35 @@ LRESULT CView::OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHan
 	return 0;
 }
 
+// MouseOver message is processed by the CMainFrm
 LRESULT CView::OnMouseHover(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 {
   LRESULT lResult;
   if(mPTSAT.bClientUpdated)
   { CallChain(1521, m_hWnd, uMsg, wParam, lParam, lResult); }
-  SetMsgHandled(false);
+  else
+    SetMsgHandled(false); // In this case, the message should be handled by the other message handlers
   return 0;
 }
 
+// If a user double clicks the colour map with the left mouse button,
+// a dialog to set the range of plot data will be shown. 
 LRESULT CView::OnLButtonDblClk(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 {
   int xPos = GET_X_LPARAM(lParam); 
   int yPos = GET_Y_LPARAM(lParam);
+  // Get the type of the object clicked using the mouse position.
   int idx = mPTSAT.Find(xPos,yPos);
+  // If the clicked object is the colour map,
   if(idx==-2)
   {
     CRangeDlg dlg;
+    // Shows the range set dialog
     dlg.DoModal();
+    // Get minimum and maximum values from the dialog box
     mPTSAT.GetSetPlotData(0,1,dlg.m_minval,true);
     mPTSAT.GetSetPlotData(0,2,dlg.m_maxval,true);
+    // Redraw the plot to reflect the new data range
     Invalidate();
   }
   return 0;

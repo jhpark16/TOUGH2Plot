@@ -14,9 +14,14 @@
 #define _WIN32_IE	0x0700
 #define _RICHEDIT_VER	0x0500
 
+// _ATL_USE_DDX_FLOAT and _WTL_NO_CSTRING are required for WTL 9.1
+// It is not needed for WTL 10
+//#define _ATL_USE_DDX_FLOAT
+//#define _WTL_NO_CSTRING
+
 #include <atlbase.h>
-#include <atlapp.h>
 #include <atlstr.h>
+#include <atlapp.h>
 
 extern CAppModule _Module;
 
@@ -32,7 +37,6 @@ extern CAppModule _Module;
 #include <atlmisc.h>
 #include <atlddx.h>
 
-#include <stdio.h>
 #include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>

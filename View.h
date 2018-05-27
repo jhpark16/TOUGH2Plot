@@ -13,12 +13,16 @@ class CView : public CWindowImpl<CView>, public CDynamicChain
 public:
   DECLARE_WND_CLASS(NULL)
 
+  // A function function pretranlate Windows messages for this view class
   BOOL PreTranslateMessage(MSG* pMsg)
   {
     pMsg;
     return FALSE;
   }
-
+  // This view class receives all the Windows message targeted to the client area.
+  // If CView cannot handle the message, use CallChain to send the message to CMainFrm.
+  // Since CView cannot update the Toolbar or Statusbar, any operations updating these 
+  // should be sent to CMainFrm.
   BEGIN_MSG_MAP(CView)
     MESSAGE_HANDLER(WM_PAINT, OnPaint)
     MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
@@ -53,6 +57,8 @@ public:
 
 #pragma pack(push,1) 
 
+// When you compile the data structure for 64 bit integers, use M64 defintion
+// The current TOUGH2 plot example files are designed for 32 bit integers.
 //#define M64
 #ifdef M64
 struct T2PTSATHead
@@ -106,11 +112,18 @@ struct T2FluxRecord
   double VEL_AQ; // m/s
   double FLO_OIL; // kg/s
 };
-#else
+#else // Structure for 32 bit integers
+// Structure for the header of TOUGH2 Pressure, temperature, saturation plot data. 
+// The current TOUGH2 plot example files (FLUX.TPL and PTSAT.TPL) are designed 
+// for 32 bit integers.
+// The TOUGH2 plot data (PTSAT.TPL) begins with this header structure.
 struct T2PTSATHead
 {
+  // Number of total elements(cells)
   int NEL;
+  // The final time step
   float SUMTIM;
+  // Number of cyles
   int KCYC;
   int ITER;
   int ITERC;
@@ -121,14 +134,19 @@ struct T2PTSATHead
   float MAX_REDISUAL;
   int NER;
   int KER;
+  // 
   float DELTEX;
 };
-
+// A record for one cell
 struct T2PTSATRecord
 {
+  // The name (ID) of element(cell)
   char ELEM[5];
+  // The numerical index of the element starting from 0
   int INDEX;
+  // The pressure of the cell in Pascal
   float PRESSURE;
+  // The temperature in Celcius
   float TEMPERATURE;
   float SG;
   float SL;
@@ -146,16 +164,27 @@ struct T2FluxHead
 };
 struct T2FluxRecord
 {
+  // The name (ID) of element #1(cell)
   char ELEM1[5];
+  // The name (ID) of element #2(cell)
   char ELEM2[5];
+  // The numerical index of this record starting from 0
   int INDEX;
+  // Flow of heat
   float FLOH;
+  // Flow of heat and flux
   float FLOH_FLOF;
+  // Flux of total flow
   float FLOF;
+  // Flow of gas in kg/s
   float FLO_GAS;
+  // Flow of aqueous fraction in kg/s
   float FLO_AQ; // kg/s
-  float VEL_GAS; // m/s
-  float VEL_AQ; // m/s
+  // Velocity of gas fraction in m/s
+  float VEL_GAS;
+  // Velocity of aqueous fraction in m/s
+  float VEL_AQ;
+  // flow of oil fraction in m/s
   float FLO_OIL; // kg/s
 };
 #endif
@@ -235,9 +264,14 @@ public:
   double PCAP[MAX_TIME][MAX_ELEM];
   double P_REAL_RANGE[4];
   double P_REAL_Avg[MAX_TIME];
+  // Velocity of aqueous fraction along X direction of each element
+  // at each time step
   double X_VEL_AQ[MAX_TIME][MAX_ELEM];
+  // Velocity of aqueous fraction along Y direction of each element
   double Y_VEL_AQ[MAX_TIME][MAX_ELEM];
+  // Velocity of oil fraction along X direction of each element
   double X_VEL_OIL[MAX_TIME][MAX_ELEM];
+  // Velocity of oil fraction along Y direction of each element
   double Y_VEL_OIL[MAX_TIME][MAX_ELEM];
 
   // Find the element using the x, y mouse locations and returns
@@ -248,6 +282,7 @@ public:
     {
       if (boxClient[i].PtInRect(CPoint(ix, iy)))
       {
+        // Returns the index of the element (cell)
         return i;
       }
     }
@@ -352,5 +387,4 @@ void ScalePoint(CPoint *point, int scaleFactor, CPoint ptOrigin);
 void Paint(CDCHandle dc, CString *wbuf, int scaleFactor, CPoint ptOrigin);
 int getCodeValue(char ch);
 int Element_Index(char *buf);
-int GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
 
