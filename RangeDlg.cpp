@@ -14,9 +14,11 @@
 // The main structure containing the multiphase temperature and saturation data for the plot
 extern PTSATRecord mPTSAT;
 
+// InitDialog Windows message handler
 // Dialog box for data input
 LRESULT CRangeDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+  // Center the dialog box
 	CenterWindow(GetParent());
 	m_minval = mPTSAT.GetSetPlotData(0,1,0.0,false);
   m_maxval = mPTSAT.GetSetPlotData(0,2,0.0,false);
