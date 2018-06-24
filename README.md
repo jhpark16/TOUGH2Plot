@@ -4,11 +4,11 @@ For efficiency reason, TOUGH2 needs to be modified to produce binary output file
 
 The saturation of oil at 1.5x10^7 seconds is shown below.
 
-![Saturation_of_Oil](D:\Programming\TOUGH2Plot\images\saturation_of_oil.png)
+![Saturation_of_Oil](images\saturation_of_oil.png)
 
 
 
 The permeability of the formation is shown below.
 
-![Permeability](D:\Programming\TOUGH2Plot\images\permeability.png)
+![Permeability](images\permeability.png)
 
