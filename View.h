@@ -13,12 +13,14 @@ class CView : public CWindowImpl<CView>, public CDynamicChain
 public:
   DECLARE_WND_CLASS(NULL)
 
-  // A function function pretranlate Windows messages for this view class
+  // A function function pretranslate Windows messages for this view class
+  // The MainFrm initially processes the message and then asks the view to translate the message
   BOOL PreTranslateMessage(MSG* pMsg)
   {
     pMsg;
     return FALSE;
   }
+  // CDynamicChain allows CallChain(1521, xx)
   // This view class receives all the Windows message targeted to the client area.
   // If CView cannot handle the message, use CallChain to send the message to CMainFrm.
   // Since CView cannot update the Toolbar or Statusbar, any operations updating these 
